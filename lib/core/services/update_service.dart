@@ -8,7 +8,7 @@ import 'package:myapp/core/theme/app_theme.dart';
 class UpdateService {
   // Reemplaza esta URL con la ruta real donde hospedarás tu version.json en producción.
   // Por ejemplo, en GitHub Gist, GitHub Pages, o tu propio hosting.
-  static const String _updateUrl = 'https://raw.githubusercontent.com/usuario/repositorio/main/version.json';
+  static const String _updateUrl = 'https://raw.githubusercontent.com/firesul/Sanatec/main/version.json';
 
   static Future<void> checkForUpdates(BuildContext context, {bool showNoUpdateDialog = false}) async {
     try {
