@@ -23,14 +23,15 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
       titleSpacing: 20,
       title: Row(
         children: [
-          const Icon(
-            Icons.spa_rounded,
-            color: AppTheme.primary,
-            size: 22,
+          Image.asset(
+            'assets/logo_sin_fondo.png',
+            width: 24,
+            height: 24,
+            fit: BoxFit.contain,
           ),
           const SizedBox(width: 10),
           Text(
-            'Mental Data',
+            'SanaTec',
             style: GoogleFonts.quicksand(
               fontSize: 20,
               fontWeight: FontWeight.w700,

@@ -1,11 +1,11 @@
 {
-    "name": "myapp",
-    "short_name": "myapp",
+    "name": "SanaTec",
+    "short_name": "SanaTec",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Ecosistema de Salud Mental SanaTec",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

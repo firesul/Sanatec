@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/core/router/app_router.dart';
 import 'package:myapp/core/services/auth_service.dart';
 import 'package:myapp/core/theme/app_theme.dart';
+import 'package:myapp/core/services/update_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,6 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService.checkForUpdates(context);
       _checkAutoLogin();
     });
   }
@@ -378,23 +380,16 @@ class _BrandHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Ícono circular coral con ícono de hoja/spa
-        Container(
-          width: 64,
-          height: 64,
-          decoration: const BoxDecoration(
-            color: AppTheme.primaryContainer,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.spa_rounded,
-            color: Colors.white,
-            size: 32,
-          ),
+        // Logotipo oficial de SanaTec sin fondo
+        Image.asset(
+          'assets/logo_sin_fondo.png',
+          width: 80,
+          height: 80,
+          fit: BoxFit.contain,
         ),
         const SizedBox(height: 12),
         Text(
-          'Mental Data',
+          'SanaTec',
           style: GoogleFonts.quicksand(
             fontSize: 24,
             fontWeight: FontWeight.w700,

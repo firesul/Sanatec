@@ -21,12 +21,18 @@ class GeminiService {
     required String edad,
     required List<Map<String, dynamic>> checkins,
     required List<Map<String, dynamic>> triajes,
+    double animoPromedioSemanal = 0,
+    double suenoPromedioSemanal = 0,
   }) async {
     // Construir un resumen legible de los datos para la IA
     final buffer = StringBuffer();
     buffer.writeln("Paciente: $nombre");
     buffer.writeln("Carrera: $carrera");
     buffer.writeln("Edad: $edad años");
+    
+    buffer.writeln("\n--- RESUMEN SEMANAL DE TENDENCIA ---");
+    buffer.writeln("Ánimo promedio semanal: ${animoPromedioSemanal.toStringAsFixed(1)}/10");
+    buffer.writeln("Horas de sueño promedio semanal: ${suenoPromedioSemanal.toStringAsFixed(1)} horas");
     
     buffer.writeln("\n--- HISTORIAL DE MONITOREO DIARIO (Check-ins) ---");
     if (checkins.isEmpty) {

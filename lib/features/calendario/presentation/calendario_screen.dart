@@ -440,7 +440,8 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
             onDestinationSelected: (i) {
               if (i == 0) context.go(AppRoutes.especialista);
               if (i == 1) return; // Ya estamos
-              if (i == 2) context.go('${AppRoutes.especialista}?tab=2'); // Regresa al dashboard para buscar directamente
+              if (i == 2) context.go('${AppRoutes.especialista}?tab=2');
+              if (i == 3) context.go('${AppRoutes.especialista}?tab=3');
             },
             backgroundColor: const Color(0xFFFBF2EF),
             indicatorColor: AppTheme.primary.withOpacity(0.15),
@@ -448,6 +449,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
               NavigationDestination(icon: const Icon(Icons.dashboard_rounded), label: t('dashboard')),
               NavigationDestination(icon: const Icon(Icons.calendar_month_rounded), selectedIcon: const Icon(Icons.calendar_month_rounded, color: AppTheme.primary), label: t('schedule')),
               NavigationDestination(icon: const Icon(Icons.search_rounded), label: t('search')),
+              const NavigationDestination(icon: Icon(Icons.group_add_rounded), selectedIcon: Icon(Icons.group_add_rounded, color: AppTheme.primary), label: 'Equipo'),
             ],
           ),
           appBar: isWide
@@ -460,10 +462,15 @@ class _CalendarioScreenState extends State<CalendarioScreen> {
                   titleSpacing: 20,
                   title: Row(
                     children: [
-                      const Icon(Icons.spa_rounded, color: AppTheme.primary, size: 22),
+                      Image.asset(
+                        'assets/logo_sin_fondo.png',
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.contain,
+                      ),
                       const SizedBox(width: 8),
                       Text(
-                        'Mental Data',
+                        'SanaTec',
                         style: GoogleFonts.quicksand(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -690,6 +697,7 @@ class _SpecialistDrawer extends StatelessWidget {
       (icon: Icons.dashboard_rounded, label: t('dashboard')),
       (icon: Icons.calendar_month_rounded, label: t('schedule')),
       (icon: Icons.search_rounded, label: t('search')),
+      (icon: Icons.group_add_rounded, label: 'Gestionar Equipo'),
     ];
 
     return Container(
@@ -707,10 +715,15 @@ class _SpecialistDrawer extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.spa_rounded, color: AppTheme.primary, size: 22),
+              Image.asset(
+                'assets/logo_sin_fondo.png',
+                width: 24,
+                height: 24,
+                fit: BoxFit.contain,
+              ),
               const SizedBox(width: 8),
               Text(
-                'Mental Data',
+                'SanaTec',
                 style: GoogleFonts.quicksand(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -806,6 +819,7 @@ class _SpecialistDrawer extends StatelessWidget {
                   if (i == 0) context.go(AppRoutes.especialista);
                   if (i == 1) context.go(AppRoutes.calendario);
                   if (i == 2) context.go('${AppRoutes.especialista}?tab=2');
+                  if (i == 3) context.go('${AppRoutes.especialista}?tab=3');
                 },
                 borderRadius: BorderRadius.circular(8),
                 child: Container(

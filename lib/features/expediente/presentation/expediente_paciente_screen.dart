@@ -62,7 +62,7 @@ class _ExpedientePacienteScreenState extends State<ExpedientePacienteScreen>
           },
         ),
         title: Text(
-          'Mental Data',
+          'SanaTec',
           style: GoogleFonts.quicksand(
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -1506,8 +1506,233 @@ final _cardDecoration = BoxDecoration(
 );
 
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // Pestaña: Monitoreos (Check-ins diarios)
 // ---------------------------------------------------------------------------
+
+String _getMoodEmoji(int mood) {
+  if (mood <= 2) return '🧠😢 (Agotado / Muy Triste)';
+  if (mood <= 4) return '🧠😟 (Ansioso / Triste)';
+  if (mood <= 6) return '🧠😐 (Calmado / Neutral)';
+  if (mood <= 8) return '🧠😊 (Feliz / Motivado)';
+  return '🧠🤩✨ (¡Feliz al Máximo! 🌟)';
+}
+
+void _mostrarDetalleMonitoreo(BuildContext context, Map<String, dynamic> data, String fecha) {
+  final animo = data['nivelAnimo'] as int? ?? 5;
+  final comentario = data['comentarios'] as String? ?? 'Sin comentarios adicionales.';
+  final sueno = data['horasSueno'] as num?;
+  final dormir = data['horaDormir'] as String?;
+  final despertar = data['horaDespertar'] as String?;
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: AppTheme.background,
+        child: Container(
+          width: 450,
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Encabezado
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Detalle de Monitoreo',
+                    style: GoogleFonts.quicksand(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: AppTheme.onSurfaceVariant),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              const Divider(height: 24),
+
+              // Fecha
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today_rounded, size: 16, color: AppTheme.secondary),
+                  const SizedBox(width: 8),
+                  Text(
+                    fecha,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Tarjeta de estado de ánimo
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.outlineVariant.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$animo',
+                          style: GoogleFonts.quicksand(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Estado de Ánimo',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _getMoodEmoji(animo),
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Tarjeta de sueño si existe
+              if (sueno != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.outlineVariant.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: AppTheme.secondary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.bedtime_rounded,
+                          color: AppTheme.secondary,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Registro de Sueño',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${sueno.toStringAsFixed(1)} horas de descanso',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.onSurface,
+                              ),
+                            ),
+                            if (dormir != null && despertar != null)
+                              Text(
+                                'Horario: $dormir a $despertar',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 12,
+                                  color: AppTheme.onSurfaceVariant,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 20),
+
+              // Caja de comentarios / Expresión personal
+              Text(
+                'Sentimientos expresados:',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF8F6),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFFFE1DB)),
+                ),
+                child: Text(
+                  comentario,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    color: AppTheme.onSurface,
+                    fontStyle: FontStyle.italic,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
 
 class _MonitoreosTab extends StatelessWidget {
   const _MonitoreosTab({required this.pacienteId});
@@ -1606,6 +1831,8 @@ class _MonitoreosTab extends StatelessWidget {
                           comentario.isEmpty
                               ? 'Sin comentarios adicionales.'
                               : comentario,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 14,
                             color: AppTheme.onSurface,
@@ -1614,6 +1841,12 @@ class _MonitoreosTab extends StatelessWidget {
                         ),
                       ],
                     ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.visibility_rounded, color: AppTheme.secondary),
+                    onPressed: () => _mostrarDetalleMonitoreo(context, data, fecha),
+                    tooltip: 'Ver Monitoreo Detallado',
                   ),
                 ],
               ),
@@ -2036,8 +2269,14 @@ class _GeminiAnalysisCard extends StatefulWidget {
 class _GeminiAnalysisCardState extends State<_GeminiAnalysisCard> {
   bool _isLoading = false;
   String? _analisis;
+  String? _analisisAnterior; // Guarda el análisis clínico previo para comparativas Diff
+  bool _mostrarGraficas = false; // Controla si se renderizan las gráficas semanales
   String? _error;
   DateTime? _fechaActualizacion;
+
+  List<Map<String, dynamic>> _checkinsSemana = [];
+  double _animoPromedioSemanal = 0;
+  double _suenoPromedioSemanal = 0;
 
   @override
   void initState() {
@@ -2062,11 +2301,69 @@ class _GeminiAnalysisCardState extends State<_GeminiAnalysisCard> {
           });
         }
       }
+      await _cargarDatosGrafica();
     } catch (e) {
       // Ignorar error al cargar
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  String _obtenerDiaSemana(int weekday) {
+    switch (weekday) {
+      case 1: return 'Lun';
+      case 2: return 'Mar';
+      case 3: return 'Mié';
+      case 4: return 'Jue';
+      case 5: return 'Vie';
+      case 6: return 'Sáb';
+      case 7: return 'Dom';
+      default: return '';
+    }
+  }
+
+  Future<void> _cargarDatosGrafica() async {
+    final checkinsSnap = await FirebaseFirestore.instance
+        .collection('usuarios')
+        .doc(widget.pacienteId)
+        .collection('checkins')
+        .orderBy('fecha', descending: true)
+        .limit(7)
+        .get();
+
+    final List<Map<String, dynamic>> temp = [];
+    double totalAnimo = 0;
+    double totalSueno = 0;
+    int countAnimo = 0;
+    int countSueno = 0;
+
+    for (final doc in checkinsSnap.docs) {
+      final data = doc.data();
+      final ts = data['fecha'] as Timestamp?;
+      if (ts != null) {
+        final d = ts.toDate();
+        final animo = data['nivelAnimo'] as num? ?? 5;
+        final sueno = data['horasSueno'] as num? ?? 8.0;
+        
+        totalAnimo += animo.toDouble();
+        countAnimo++;
+        totalSueno += sueno.toDouble();
+        countSueno++;
+
+        temp.add({
+          'dia': _obtenerDiaSemana(d.weekday),
+          'animo': animo.toDouble(),
+          'sueno': sueno.toDouble(),
+          'fecha': d,
+        });
+      }
+    }
+
+    setState(() {
+      _checkinsSemana = temp.reversed.toList();
+      _animoPromedioSemanal = countAnimo > 0 ? (totalAnimo / countAnimo) : 0;
+      _suenoPromedioSemanal = countSueno > 0 ? (totalSueno / countSueno) : 0;
+    });
   }
 
   Future<void> _generarAnalisis() async {
@@ -2087,64 +2384,95 @@ class _GeminiAnalysisCardState extends State<_GeminiAnalysisCard> {
       final carrera = pacienteData['carrera'] as String? ?? 'N/A';
       final edad = pacienteData['edad']?.toString() ?? 'N/A';
 
-      // 2. Obtener check-ins recientes
+      // Recargar datos de la gráfica y promedios antes del análisis
+      await _cargarDatosGrafica();
+
+      // 2. Obtener check-ins
       final checkinsSnap = await FirebaseFirestore.instance
           .collection('usuarios')
           .doc(widget.pacienteId)
           .collection('checkins')
           .orderBy('fecha', descending: true)
-          .limit(10)
           .get();
 
-      final List<Map<String, dynamic>> checkins = [];
+      final List<Map<String, dynamic>> checkinsCompletos = [];
+      final List<Map<String, dynamic>> checkinsNuevos = [];
+      final DateTime? ultimoAnalisis = _fechaActualizacion;
+
       for (final doc in checkinsSnap.docs) {
         final data = doc.data();
         final ts = data['fecha'] as Timestamp?;
         String fecha = 'Sin fecha';
+        DateTime? dt;
         if (ts != null) {
-          final d = ts.toDate();
-          fecha = '${d.day}/${d.month}/${d.year}';
+          dt = ts.toDate();
+          fecha = '${dt.day}/${dt.month}/${dt.year}';
         }
-        checkins.add({
+        final item = {
           'fecha': fecha,
           'nivelAnimo': data['nivelAnimo'] ?? 5,
           'comentarios': data['comentarios'] ?? '',
-        });
+          'dt': dt,
+        };
+        checkinsCompletos.add(item);
+
+        if (dt != null && (ultimoAnalisis == null || dt.isAfter(ultimoAnalisis))) {
+          checkinsNuevos.add(item);
+        }
       }
 
-      // 3. Obtener triajes recientes
+      // Si no hay nuevos checkins, hacemos fallback a los últimos 10
+      final List<Map<String, dynamic>> checkinsParaIa = checkinsNuevos.isNotEmpty 
+          ? checkinsNuevos 
+          : checkinsCompletos.take(10).toList();
+
+      // 3. Obtener triajes
       final triajesSnap = await FirebaseFirestore.instance
           .collection('usuarios')
           .doc(widget.pacienteId)
           .collection('triajes')
           .orderBy('fecha', descending: true)
-          .limit(5)
           .get();
 
-      final List<Map<String, dynamic>> triajes = [];
+      final List<Map<String, dynamic>> triajesCompletos = [];
+      final List<Map<String, dynamic>> triajesNuevos = [];
+
       for (final doc in triajesSnap.docs) {
         final data = doc.data();
         final ts = data['fecha'] as Timestamp?;
         String fecha = 'Sin fecha';
+        DateTime? dt;
         if (ts != null) {
-          final d = ts.toDate();
-          fecha = '${d.day}/${d.month}/${d.year}';
+          dt = ts.toDate();
+          fecha = '${dt.day}/${dt.month}/${dt.year}';
         }
-        triajes.add({
+        final item = {
           'fecha': fecha,
           'ansiedad': data['ansiedad'] ?? 0,
           'depresion': data['depresion'] ?? 0,
           'nivelRiesgo': data['nivelRiesgo'] ?? 'bajo',
-        });
+          'dt': dt,
+        };
+        triajesCompletos.add(item);
+
+        if (dt != null && (ultimoAnalisis == null || dt.isAfter(ultimoAnalisis))) {
+          triajesNuevos.add(item);
+        }
       }
 
-      // 4. Invocar servicio de IA de Gemini
+      final List<Map<String, dynamic>> triajesParaIa = triajesNuevos.isNotEmpty
+          ? triajesNuevos
+          : triajesCompletos.take(5).toList();
+
+      // 4. Invocar servicio de IA de Gemini pasándole los promedios calculados
       final resultado = await GeminiService.instance.generarAnalisisClinico(
         nombre: nombre,
         carrera: carrera,
         edad: edad,
-        checkins: checkins,
-        triajes: triajes,
+        checkins: checkinsParaIa,
+        triajes: triajesParaIa,
+        animoPromedioSemanal: _animoPromedioSemanal,
+        suenoPromedioSemanal: _suenoPromedioSemanal,
       );
 
       // Guardar el análisis generado en Firestore
@@ -2154,6 +2482,7 @@ class _GeminiAnalysisCardState extends State<_GeminiAnalysisCard> {
       );
 
       setState(() {
+        _analisisAnterior = _analisis;
         _analisis = resultado;
         _fechaActualizacion = DateTime.now();
         _isLoading = false;
@@ -2164,6 +2493,222 @@ class _GeminiAnalysisCardState extends State<_GeminiAnalysisCard> {
         _isLoading = false;
       });
     }
+  }
+
+  void _mostrarAdvertenciaIaDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.info_outline_rounded, color: AppTheme.primary, size: 28),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Nota de Compañerismo',
+                  style: GoogleFonts.quicksand(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Pero recuerda, la IA no nos debe de reemplazar, es tu compañero de trabajo.',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14, 
+              height: 1.5,
+              color: AppTheme.onSurface,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(foregroundColor: AppTheme.error),
+              child: Text(
+                'Cancelar',
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _generarAnalisis();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.secondary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: Text(
+                'Está bien, lo entiendo',
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDiffView(String oldText, String newText) {
+    final oldLines = oldText.split('\n');
+    final newLines = newText.split('\n');
+    final List<Widget> diffWidgets = [];
+
+    final Set<String> oldSet = oldLines.map((l) => l.trim()).toSet();
+    final Set<String> newSet = newLines.map((l) => l.trim()).toSet();
+
+    // Líneas eliminadas (en rojo)
+    for (final line in oldLines) {
+      if (!newSet.contains(line.trim()) && line.trim().isNotEmpty) {
+        diffWidgets.add(
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            margin: const EdgeInsets.symmetric(vertical: 1),
+            color: const Color(0xFFFFEBEE), // Rojo muy suave
+            width: double.infinity,
+            child: Text(
+              '- $line',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.red[900],
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    // Líneas añadidas (en verde) o iguales
+    for (final line in newLines) {
+      if (!oldSet.contains(line.trim()) && line.trim().isNotEmpty) {
+        diffWidgets.add(
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            margin: const EdgeInsets.symmetric(vertical: 1),
+            color: const Color(0xFFE8F5E9), // Verde muy suave
+            width: double.infinity,
+            child: Text(
+              '+ $line',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.green[900],
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        );
+      } else if (line.trim().isNotEmpty) {
+        diffWidgets.add(
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            margin: const EdgeInsets.symmetric(vertical: 1),
+            width: double.infinity,
+            child: Text(
+              '  $line',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.onSurfaceVariant,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: diffWidgets,
+    );
+  }
+
+  void _mostrarDiffDialog() {
+    if (_analisisAnterior == null || _analisis == null) return;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: AppTheme.background,
+          child: Container(
+            width: 600,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Comparativa de Cambios (IA SanaTec)',
+                        style: GoogleFonts.quicksand(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: AppTheme.onSurfaceVariant),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Visualiza en verde las adiciones y en rojo las secciones modificadas respecto al diagnóstico clínico previo (Estilo GitHub).',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    color: AppTheme.onSurfaceVariant,
+                  ),
+                ),
+                const Divider(height: 24),
+                Flexible(
+                  child: Container(
+                    constraints: const BoxConstraints(maxHeight: 400),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.outlineVariant.withOpacity(0.3)),
+                    ),
+                    child: RawScrollbar(
+                      thumbColor: const Color(0xFFCBD5E1),
+                      radius: const Radius.circular(8),
+                      thickness: 4,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(12),
+                        child: _buildDiffView(_analisisAnterior!, _analisis!),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.secondary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    ),
+                    child: Text(
+                      'Cerrar Comparativa',
+                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   bool _isSavingNote = false;
@@ -2204,6 +2749,185 @@ class _GeminiAnalysisCardState extends State<_GeminiAnalysisCard> {
         setState(() => _isSavingNote = false);
       }
     }
+  }
+
+  Widget _buildVisualChart() {
+    if (_checkinsSemana.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9), // Slate suave de fondo
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Métricas de Tendencia Semanal (SanaTec)',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.onSurface,
+                ),
+              ),
+              Text(
+                'Últimos ${_checkinsSemana.length} días',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  color: AppTheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: _checkinsSemana.map((c) {
+              final double animo = c['animo'];
+              final double sueno = c['sueno'];
+              final String dia = c['dia'];
+              
+              // Color de la barra de ánimo según nivel
+              Color barColor = AppTheme.secondary; // Green/Emerald
+              if (animo <= 4) {
+                barColor = AppTheme.primary; // Red/Coral
+              } else if (animo <= 7) {
+                barColor = const Color(0xFFE2B93B); // Yellow/Gold
+              }
+
+              return Expanded(
+                child: Column(
+                  children: [
+                    // Valor del ánimo flotante
+                    Text(
+                      '${animo.round()}',
+                      style: GoogleFonts.quicksand(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: barColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Barra de ánimo
+                    Container(
+                      height: animo * 10.0 + 8.0, // Altura proporcional (max 108px)
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: barColor.withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Horas de sueño en burbuja
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.bedtime_rounded, size: 9, color: Color(0xFF475569)),
+                          const SizedBox(width: 2),
+                          Text(
+                            '${sueno.toStringAsFixed(0)}h',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF475569),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    // Nombre del día
+                    Text(
+                      dia,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+          // Resumen de Promedios
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.insights_rounded, size: 16, color: AppTheme.secondary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Ánimo Promedio: ${_animoPromedioSemanal.toStringAsFixed(1)}/10',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.hotel_rounded, size: 16, color: Color(0xFF1A73E8)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Sueño Promedio: ${_suenoPromedioSemanal.toStringAsFixed(1)}h',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -2257,14 +2981,27 @@ class _GeminiAnalysisCardState extends State<_GeminiAnalysisCard> {
                         color: AppTheme.onSurface,
                       ),
                     ),
-                    Text(
-                      _fechaActualizacion != null
-                          ? 'Último análisis: ${_fechaActualizacion!.day}/${_fechaActualizacion!.month}/${_fechaActualizacion!.year} ${_fechaActualizacion!.hour}:${_fechaActualizacion!.minute.toString().padLeft(2, '0')}'
-                          : 'Potenciado por Gemini',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF1A73E8),
+                    RichText(
+                      text: TextSpan(
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: _fechaActualizacion != null
+                                ? 'Último análisis: ${_fechaActualizacion!.day}/${_fechaActualizacion!.month}/${_fechaActualizacion!.year} ${_fechaActualizacion!.hour}:${_fechaActualizacion!.minute.toString().padLeft(2, '0')} • '
+                                : 'Potenciado por Gemini • ',
+                            style: const TextStyle(color: Color(0xFF1A73E8)),
+                          ),
+                          const TextSpan(
+                            text: 'porque todos necesitamos un compañero',
+                            style: TextStyle(
+                              color: Color(0xFF137333), // Verde natural / ecológico premium
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -2273,6 +3010,8 @@ class _GeminiAnalysisCardState extends State<_GeminiAnalysisCard> {
             ],
           ),
           const SizedBox(height: 16),
+
+          if (_mostrarGraficas) _buildVisualChart(),
 
           // Contenido según estado
           if (_isLoading) ...[
@@ -2373,6 +3112,29 @@ class _GeminiAnalysisCardState extends State<_GeminiAnalysisCard> {
                   ),
                 ),
                 const Spacer(),
+                if (_analisisAnterior != null) ...[
+                  ElevatedButton.icon(
+                    onPressed: _mostrarDiffDialog,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF1F5F9), // Slate claro
+                      foregroundColor: const Color(0xFF334155),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    ),
+                    icon: const Icon(Icons.compare_arrows_rounded, size: 13),
+                    label: Text(
+                      'Ver Cambios (Diff)',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
                 if (_isSavingNote)
                   const SizedBox(
                     width: 20,
@@ -2402,7 +3164,7 @@ class _GeminiAnalysisCardState extends State<_GeminiAnalysisCard> {
                   ),
                 const SizedBox(width: 6),
                 ElevatedButton.icon(
-                  onPressed: _generarAnalisis,
+                  onPressed: _mostrarAdvertenciaIaDialog, // Mostrar advertencia primero
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFE8F0FE),
                     foregroundColor: const Color(0xFF1A73E8),
@@ -2430,28 +3192,60 @@ class _GeminiAnalysisCardState extends State<_GeminiAnalysisCard> {
   }
 
   Widget _buildGenerateButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: _generarAnalisis,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1A73E8),
-          foregroundColor: Colors.white,
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: _mostrarAdvertenciaIaDialog, // Mostrar diálogo de advertencia de IA primero
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1A73E8),
+              foregroundColor: Colors.white,
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            icon: const Icon(Icons.auto_awesome_rounded, size: 16),
+            label: Text(
+              'Generar Diagnóstico IA',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 12),
         ),
-        icon: const Icon(Icons.auto_awesome_rounded, size: 16),
-        label: Text(
-          'Generar Diagnóstico IA',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              setState(() {
+                _mostrarGraficas = !_mostrarGraficas;
+              });
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.secondary,
+              side: const BorderSide(color: AppTheme.secondary, width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            icon: Icon(
+              _mostrarGraficas ? Icons.bar_chart_rounded : Icons.show_chart_rounded, 
+              size: 16,
+            ),
+            label: Text(
+              _mostrarGraficas ? 'Ocultar Gráficas' : 'Ver Gráficas',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 

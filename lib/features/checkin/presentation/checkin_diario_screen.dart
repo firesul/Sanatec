@@ -4,6 +4,7 @@ import 'package:myapp/core/services/firestore_service.dart';
 import 'package:myapp/core/theme/app_theme.dart';
 import 'package:myapp/shared/widgets/app_bottom_nav_bar.dart';
 import 'package:myapp/shared/widgets/app_top_bar.dart';
+import 'package:myapp/shared/widgets/cerebro_nativo.dart';
 
 // ---------------------------------------------------------------------------
 // Screen: Check-in Diario (Home del estudiante / Mood)
@@ -60,41 +61,41 @@ class _CheckinDiarioScreenState extends State<CheckinDiarioScreen>
   }
 
   /// Datos del emoji según el valor del slider
-  ({IconData icon, Color bg, Color iconColor, String label}) get _moodData {
+  ({String icon, Color bg, Color iconColor, String label}) get _moodData {
     if (_mood <= 2) {
       return (
-        icon: Icons.sentiment_very_dissatisfied_rounded,
+        icon: '🧠😢',
         bg: AppTheme.errorContainer,
         iconColor: AppTheme.error,
-        label: 'Muy difícil',
+        label: 'Agotado / Muy Triste',
       );
     } else if (_mood <= 4) {
       return (
-        icon: Icons.sentiment_dissatisfied_rounded,
+        icon: '🧠😟',
         bg: const Color(0xFFFFDAD3),
         iconColor: AppTheme.primary,
-        label: 'Difícil',
+        label: 'Ansioso / Triste',
       );
     } else if (_mood <= 6) {
       return (
-        icon: Icons.sentiment_neutral_rounded,
+        icon: '🧠😐',
         bg: const Color(0xFFFFDEAD),
         iconColor: const Color(0xFF7C5400),
-        label: 'Neutral',
+        label: 'Calmado / Neutral',
       );
     } else if (_mood <= 8) {
       return (
-        icon: Icons.sentiment_satisfied_rounded,
+        icon: '🧠😊',
         bg: const Color(0xFFFFDAD3),
         iconColor: AppTheme.primary,
-        label: 'Bien',
+        label: 'Feliz / Motivado',
       );
     } else {
       return (
-        icon: Icons.sentiment_very_satisfied_rounded,
+        icon: '🧠🤩✨',
         bg: AppTheme.secondaryContainer,
         iconColor: AppTheme.secondary,
-        label: 'Excelente',
+        label: '¡Feliz al Máximo! 🌟',
       );
     }
   }
@@ -132,6 +133,70 @@ class _CheckinDiarioScreenState extends State<CheckinDiarioScreen>
         content: Text('Error al guardar: $e'),
         behavior: SnackBarBehavior.floating,
       ));
+    }
+  }
+
+  Widget _buildSleepFeedback() {
+    if (!_guardado) {
+      return const SizedBox.shrink();
+    }
+    final hours = _calcularHorasSueno();
+    if (hours >= 7.0) {
+      return Container(
+        margin: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE6F4EA), // Emerald/Green suave
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFF34A853).withOpacity(0.2)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.stars_rounded, color: Color(0xFF137333), size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                '¡Excelente descanso! 🧠✨ Dormir bien ayuda a consolidar tu memoria, regula tus emociones y fortalece tu cerebro. ¡Sigue así, tu cuerpo te lo agradece!',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  color: const Color(0xFF137333),
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        margin: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF7E0), // Orange/Yellow suave
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFFBBC05).withOpacity(0.3)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.info_outline_rounded, color: Color(0xFFB06000), size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Sugerencia de descanso 🛌: Has dormido menos de 7 horas. Un descanso adecuado estabiliza tu estado de ánimo, reduce la ansiedad y te recarga de energía. ¡Hoy podría ser una buena noche para acostarte un poco más temprano!',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  color: const Color(0xFFB06000),
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -333,6 +398,7 @@ class _CheckinDiarioScreenState extends State<CheckinDiarioScreen>
                           ],
                         ),
                       ),
+                      _buildSleepFeedback(),
                     ],
                   ),
                 ),
@@ -341,7 +407,7 @@ class _CheckinDiarioScreenState extends State<CheckinDiarioScreen>
 
                 // --- Comentarios ---
                 Text(
-                  'Comentarios',
+                  '¡Exprésate! ¿Cómo te sientes hoy?',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -359,7 +425,7 @@ class _CheckinDiarioScreenState extends State<CheckinDiarioScreen>
                   ),
                   decoration: InputDecoration(
                     hintText:
-                        '¿Hay algo en particular que esté influyendo en tu estado de ánimo?',
+                        'Cuéntanos un poco más sobre lo que tienes en mente hoy...',
                     hintStyle: GoogleFonts.plusJakartaSans(
                       fontSize: 15,
                       color: AppTheme.outlineVariant,
@@ -444,7 +510,7 @@ class _MoodCard extends StatelessWidget {
 
   final double mood;
   final ({
-    IconData icon,
+    String icon,
     Color bg,
     Color iconColor,
     String label
@@ -493,7 +559,7 @@ class _MoodCard extends StatelessWidget {
               children: [
                 // Pregunta
                 Text(
-                  '¿Cómo te sientes?',
+                  '¿Cómo te sientes hoy?',
                   style: GoogleFonts.quicksand(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
@@ -503,7 +569,7 @@ class _MoodCard extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Emoji animado
+                // Cerebro animado e interactivo
                 ScaleTransition(
                   scale: CurvedAnimation(
                     parent: emojiAnim,
@@ -511,8 +577,8 @@ class _MoodCard extends StatelessWidget {
                   ),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    width: 128,
-                    height: 128,
+                    width: 140,
+                    height: 140,
                     decoration: BoxDecoration(
                       color: moodData.bg,
                       shape: BoxShape.circle,
@@ -528,14 +594,13 @@ class _MoodCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutBack,
-                      child: Icon(
-                        moodData.icon,
-                        key: ValueKey(moodData.icon),
-                        size: 72,
-                        color: moodData.iconColor,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: CerebroNativo(
+                          moodValue: mood,
+                          size: 110,
+                        ),
                       ),
                     ),
                   ),
@@ -588,7 +653,7 @@ class _MoodCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '1 – Difícil',
+                        '1 – Agotado / Triste',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -596,7 +661,7 @@ class _MoodCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '10 – Excelente',
+                        '10 – ¡Feliz al Máximo!',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,

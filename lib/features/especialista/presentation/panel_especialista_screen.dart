@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -117,6 +118,7 @@ class _PanelEspecialistaScreenState
               NavigationDestination(icon: const Icon(Icons.dashboard_rounded), selectedIcon: const Icon(Icons.dashboard_rounded, color: AppTheme.primary), label: t('dashboard')),
               NavigationDestination(icon: const Icon(Icons.calendar_month_rounded), selectedIcon: const Icon(Icons.calendar_month_rounded, color: AppTheme.primary), label: t('schedule')),
               NavigationDestination(icon: const Icon(Icons.search_rounded), selectedIcon: const Icon(Icons.search_rounded, color: AppTheme.primary), label: t('search')),
+              const NavigationDestination(icon: Icon(Icons.group_add_rounded), selectedIcon: Icon(Icons.group_add_rounded, color: AppTheme.primary), label: 'Equipo'),
             ],
           ),
           // AppBar solo en móvil
@@ -130,11 +132,15 @@ class _PanelEspecialistaScreenState
                   titleSpacing: 20,
                   title: Row(
                     children: [
-                      const Icon(Icons.spa_rounded,
-                          color: AppTheme.primary, size: 22),
+                      Image.asset(
+                        'assets/logo_sin_fondo.png',
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.contain,
+                      ),
                       const SizedBox(width: 8),
                       Text(
-                        'Mental Data',
+                        'SanaTec',
                         style: GoogleFonts.quicksand(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -175,10 +181,12 @@ class _PanelEspecialistaScreenState
                 ),
 
               // ---- Contenido principal ----
-          Expanded(
-            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: _pacientesStream,
-              builder: (context, snapshot) {
+              Expanded(
+                child: _navIndex == 3
+                    ? const _GestionarEquipoView()
+                    : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                        stream: _pacientesStream,
+                        builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
@@ -295,6 +303,7 @@ class _SpecialistDrawer extends StatelessWidget {
       (icon: Icons.dashboard_rounded, label: t('dashboard')),
       (icon: Icons.calendar_month_rounded, label: t('schedule')),
       (icon: Icons.search_rounded, label: t('search')),
+      (icon: Icons.group_add_rounded, label: 'Gestionar Equipo'),
     ];
 
     return Container(
@@ -315,11 +324,15 @@ class _SpecialistDrawer extends StatelessWidget {
           // Logo
           Row(
             children: [
-              const Icon(Icons.spa_rounded,
-                  color: AppTheme.primary, size: 22),
+              Image.asset(
+                'assets/logo_sin_fondo.png',
+                width: 24,
+                height: 24,
+                fit: BoxFit.contain,
+              ),
               const SizedBox(width: 8),
               Text(
-                'Mental Data',
+                'SanaTec',
                 style: GoogleFonts.quicksand(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -951,6 +964,403 @@ class _Card extends StatelessWidget {
         ],
       ),
       child: child,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Vista de gestión de psicólogos y médicos especialistas
+// ---------------------------------------------------------------------------
+
+class _GestionarEquipoView extends StatefulWidget {
+  const _GestionarEquipoView();
+
+  @override
+  State<_GestionarEquipoView> createState() => _GestionarEquipoViewState();
+}
+
+class _GestionarEquipoViewState extends State<_GestionarEquipoView> {
+  final _formKey = GlobalKey<FormState>();
+  final _nombreCtrl = TextEditingController();
+  final _correoCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  String _rolSeleccionado = 'especialista';
+  bool _isRegistering = false;
+
+  @override
+  void dispose() {
+    _nombreCtrl.dispose();
+    _correoCtrl.dispose();
+    _passwordCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _registrarEspecialista() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isRegistering = true);
+
+    final nombre = _nombreCtrl.text.trim();
+    final correo = _correoCtrl.text.trim();
+    final password = _passwordCtrl.text.trim();
+    final rol = _rolSeleccionado;
+
+    try {
+      // Registrar un usuario secundario sin cerrar sesión usando un FirebaseApp temporal
+      final tempApp = await Firebase.initializeApp(
+        name: 'TemporaryApp_${DateTime.now().millisecondsSinceEpoch}',
+        options: Firebase.app().options,
+      );
+
+      final userCred = await FirebaseAuth.instanceFor(app: tempApp)
+          .createUserWithEmailAndPassword(email: correo, password: password);
+
+      // Guardar el perfil en la colección usuarios
+      await FirebaseFirestore.instance.collection('usuarios').doc(userCred.user!.uid).set({
+        'nombre': nombre,
+        'correo': correo,
+        'rol': rol,
+        'creadoEn': FieldValue.serverTimestamp(),
+      });
+
+      // Limpiar app temporal de memoria
+      await tempApp.delete();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('¡Especialista "$nombre" registrado con éxito!'),
+          backgroundColor: AppTheme.secondary,
+          behavior: SnackBarBehavior.floating,
+        ));
+        _nombreCtrl.clear();
+        _correoCtrl.clear();
+        _passwordCtrl.clear();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error al registrar: $e'),
+          backgroundColor: AppTheme.error,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isRegistering = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width >= 760;
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(
+        isWide ? 48 : 20,
+        isWide ? 48 : 24,
+        isWide ? 48 : 20,
+        40,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Título
+          Text(
+            'Gestión de Especialistas',
+            style: GoogleFonts.quicksand(
+              fontSize: isWide ? 40 : 32,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Administra el equipo clínico de psicólogos y médicos autorizados en SanaTec.',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 16,
+              color: AppTheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Panel izquierdo: Formulario de registro (3/5 de ancho si es wide, de lo contrario expandido)
+              Expanded(
+                flex: isWide ? 3 : 1,
+                child: _Card(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'REGISTRAR NUEVO ESPECIALISTA',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        
+                        // Nombre
+                        Text(
+                          'Nombre Completo',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _nombreCtrl,
+                          decoration: InputDecoration(
+                            hintText: 'Ej. Dra. María López',
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: AppTheme.outlineVariant.withOpacity(0.5)),
+                            ),
+                          ),
+                          validator: (v) => v == null || v.trim().isEmpty ? 'Ingresa el nombre' : null,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Correo
+                        Text(
+                          'Correo Electrónico',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _correoCtrl,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            hintText: 'ejemplo@sanatec.com',
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: AppTheme.outlineVariant.withOpacity(0.5)),
+                            ),
+                          ),
+                          validator: (v) => v == null || v.trim().isEmpty ? 'Ingresa el correo' : null,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Contraseña
+                        Text(
+                          'Contraseña Temporal',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _passwordCtrl,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            hintText: 'Min. 6 caracteres',
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: AppTheme.outlineVariant.withOpacity(0.5)),
+                            ),
+                          ),
+                          validator: (v) => v == null || v.length < 6 ? 'Mínimo 6 caracteres' : null,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Rol
+                        Text(
+                          'Rol en el Portal',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          value: _rolSeleccionado,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: AppTheme.outlineVariant.withOpacity(0.5)),
+                            ),
+                          ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'especialista',
+                              child: Text(
+                                'Psicólogo Clínico / Terapeuta',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: 'medico',
+                              child: Text(
+                                'Médico Psiquiatra',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                          onChanged: (v) {
+                            if (v != null) {
+                              setState(() => _rolSeleccionado = v);
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Botón de Envío
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton.icon(
+                            onPressed: _isRegistering ? null : _registrarEspecialista,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 2,
+                            ),
+                            icon: _isRegistering 
+                                ? const SizedBox(
+                                    width: 20, 
+                                    height: 20, 
+                                    child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white))
+                                  )
+                                : const Icon(Icons.person_add_alt_1_rounded),
+                            label: Text(
+                              _isRegistering ? 'Registrando...' : 'Registrar Especialista',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Panel derecho: Lista del equipo (solo visible en pantallas anchas para no apretar el diseño móvil)
+              if (isWide) ...[
+                const SizedBox(width: 24),
+                Expanded(
+                  flex: 2,
+                  child: _Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'EQUIPO CLÍNICO AUTORIZADO',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                            color: AppTheme.secondary,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('usuarios')
+                              .where('rol', whereIn: ['especialista', 'medico'])
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+
+                            final docs = snapshot.data?.docs ?? [];
+                            if (docs.isEmpty) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 24),
+                                child: Center(
+                                  child: Text(
+                                    'No hay otros especialistas registrados.',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: AppTheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: docs.length,
+                              separatorBuilder: (_, __) => const Divider(height: 16),
+                              itemBuilder: (context, index) {
+                                final data = docs[index].data() as Map<String, dynamic>;
+                                final nombre = data['nombre'] ?? 'Sin nombre';
+                                final correo = data['correo'] ?? 'Sin correo';
+                                final rol = data['rol'] == 'medico' ? 'Médico' : 'Psicólogo';
+
+                                return ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: CircleAvatar(
+                                    backgroundColor: AppTheme.secondary.withOpacity(0.1),
+                                    child: Icon(
+                                      data['rol'] == 'medico' 
+                                          ? Icons.medical_services_rounded 
+                                          : Icons.psychology_rounded,
+                                      color: AppTheme.secondary,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    nombre,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                      color: AppTheme.onSurface,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    '$correo • $rol',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 12,
+                                      color: AppTheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

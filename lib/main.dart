@@ -20,16 +20,16 @@ void main() async {
   // Programar el recordatorio diario del check-in a las 10:00 AM
   await NotificationService.instance.scheduleDailyCheckIn();
 
-  runApp(const MentalDataApp());
+  runApp(const SanaTecApp());
 }
 
-class MentalDataApp extends StatelessWidget {
-  const MentalDataApp({super.key});
+class SanaTecApp extends StatelessWidget {
+  const SanaTecApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Mental Data',
+      title: 'SanaTec',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: appRouter,

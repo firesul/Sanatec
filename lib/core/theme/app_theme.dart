@@ -3,26 +3,26 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Paleta de colores extraída de Stitch (Tailwind Config)
-  static const Color primary = Color(0xFFAB2E15);
-  static const Color primaryContainer = Color(0xFFCD462B);
+  static const Color primary = Color(0xFFEBA282);
+  static const Color primaryContainer = Color(0xFFFFDCD0);
   static const Color onPrimary = Color(0xFFFFFFFF);
-  static const Color onPrimaryContainer = Color(0xFFFFFBFF);
+  static const Color onPrimaryContainer = Color(0xFF3E1200);
 
-  static const Color secondary = Color(0xFF00696D);
-  static const Color secondaryContainer = Color(0xFF9DEDF1);
+  static const Color secondary = Color(0xFF8BBFE6);
+  static const Color secondaryContainer = Color(0xFFE0F2FF);
   static const Color onSecondary = Color(0xFFFFFFFF);
-  static const Color onSecondaryContainer = Color(0xFF096E72);
+  static const Color onSecondaryContainer = Color(0xFF00355A);
 
-  static const Color background = Color(0xFFFFF8F6);
+  static const Color background = Color(0xFFFFFDFB);
   static const Color onBackground = Color(0xFF1E1B19);
 
-  static const Color surface = Color(0xFFFFF8F6);
+  static const Color surface = Color(0xFFFFFDFB);
   static const Color onSurface = Color(0xFF1E1B19);
-  static const Color surfaceVariant = Color(0xFFE9E1DE);
-  static const Color onSurfaceVariant = Color(0xFF59413C);
+  static const Color surfaceVariant = Color(0xFFF7ECE8);
+  static const Color onSurfaceVariant = Color(0xFF5D453E);
 
-  static const Color outline = Color(0xFF8D716B);
-  static const Color outlineVariant = Color(0xFFE1BFB8);
+  static const Color outline = Color(0xFFB59388);
+  static const Color outlineVariant = Color(0xFFEDC9BE);
 
   static const Color error = Color(0xFFBA1A1A);
   static const Color errorContainer = Color(0xFFFFDAD6);
