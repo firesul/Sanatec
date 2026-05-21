@@ -1,4 +1,5 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:myapp/core/config/env.dart';
 
 class GeminiService {
   static final GeminiService instance = GeminiService._internal();
@@ -10,8 +11,8 @@ class GeminiService {
     );
   }
 
-  // API Key compartida del usuario
-  final String _apiKey = "AIzaSyDTyieTMBEoNSofn7rNJgi-JkgFvDDZUKU";
+  // API Key consumida desde el archivo de configuración ignorado
+  final String _apiKey = Env.geminiApiKey;
   late final GenerativeModel _model;
 
   /// Genera un análisis clínico para el especialista basado en el historial del estudiante
