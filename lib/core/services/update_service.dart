@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
@@ -11,6 +12,7 @@ class UpdateService {
   static const String _updateUrl = 'https://raw.githubusercontent.com/firesul/Sanatec/main/version.json';
 
   static Future<void> checkForUpdates(BuildContext context, {bool showNoUpdateDialog = false}) async {
+    if (kIsWeb) return;
     try {
       // 1. Obtener información local de la app
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
